@@ -9,7 +9,7 @@ import zipfile
 from pathlib import Path
 from collector import Client
 
-MODULES = ("__main__", "archive", "portal", "collector", "hooks", "manual", "worker", "ops")
+MODULES = ("__main__", "archive", "portal", "collector", "hooks", "manual", "worker", "ops", "keeper")
 
 def pack(sources):
     output = io.BytesIO()

@@ -44,6 +44,23 @@ def save(db, meta, raw):
                    (ident, digest, size, raw, json.dumps(receipt, sort_keys=True)))
     return receipt
 
+def receipt_for(db, meta):
+    """Return the stable receipt for an existing archive of this identity, or None.
+
+    The stored digest and length must match the claimed metadata and the stored
+    bytes are re-hashed so a damaged archive fails instead of being reused."""
+    ident, digest, size = metadata(meta)
+    row = db.execute("SELECT sha256,length,raw,receipt FROM archives WHERE export_id=?",
+                     (ident,)).fetchone()
+    if row is None:
+        return None
+    if row[:2] != (digest, size):
+        raise ValueError("IDENTITY_CONFLICT")
+    raw = bytes(row[2])
+    if len(raw) != size or hashlib.sha256(raw).hexdigest() != digest:
+        raise ValueError("ARCHIVE_DAMAGED")
+    return json.loads(row[3])
+
 def read(db):
     result = []
     for ident, digest, size, raw, receipt in db.execute(
